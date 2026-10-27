@@ -1,8 +1,22 @@
-# Dungeon Soldier — TP LÖVE2D
+# Dungeon Soldier — Prototipo 4 (TP LÖVE2D)
 
 Juego 2D top-down estilo Zelda clásico, hecho en Lua sobre el framework
 LÖVE2D. Un soldado explora una mazmorra de dos niveles, combate enemigos
 cuerpo a cuerpo, recoge objetos y progresa hasta completar el juego.
+
+## Versión: Prototipo 4
+
+Respecto del Prototipo 3, esta versión suma:
+
+- Un **segundo tipo de enemigo, el Vampire**, cuyo ataque (preparación →
+  embestida → recuperación) está implementado con **corrutinas reales de
+  Lua**. Ver "Corrutinas" más abajo.
+- Corrección: cada enemigo aplica su propio daño de ataque (el Vampire ahora
+  hace `VAMPIRE_ATTACK_DAMAGE`, antes usaba el valor del Blood Monster).
+- Mezcla de enemigos en ambos niveles (en el nivel 1 por spawns del mapa de
+  Tiled; en el nivel 2, proceduralmente).
+- Todo lo anterior (máquinas de estado, mapas de teselas, cámara, ventana
+  escalable, pausa, HUD, eventos y audio) se mantiene sin cambios.
 
 ## Cómo ejecutar
 
