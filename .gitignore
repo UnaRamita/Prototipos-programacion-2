@@ -1,0 +1,8 @@
+# Build generada para distribucion (ver README.md, seccion "Build para itch.io").
+# Se reconstruye en cualquier momento desde el codigo fuente; no hace falta
+# versionarla.
+/build/
+
+# Archivos de sistema operativo
+Thumbs.db
+.DS_Store

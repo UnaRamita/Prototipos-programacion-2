@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="29" height="12" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="22">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="29" height="12" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="24">
  <tileset firstgid="1" name="Dungeon_Tileset" tilewidth="16" tileheight="16" tilecount="100" columns="10">
   <image source="../dungeon/Dungeon_Tileset.png" width="160" height="160"/>
   <tile id="0"><properties><property name="collidable" type="bool" value="true"/></properties></tile>
@@ -131,5 +131,19 @@
    </properties>
   </object>
   <object id="20" name="" type="door" x="208" y="64" width="16" height="48"/>
+  <object id="22" name="" type="enemy_spawn" x="136" y="40">
+   <point/>
+   <properties>
+    <property name="room" type="int" value="1"/>
+    <property name="enemy" value="vampire"/>
+   </properties>
+  </object>
+  <object id="23" name="" type="enemy_spawn" x="304" y="100">
+   <point/>
+   <properties>
+    <property name="room" type="int" value="2"/>
+    <property name="enemy" value="vampire"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

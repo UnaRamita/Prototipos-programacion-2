@@ -9,7 +9,7 @@
   tilewidth = 16,
   tileheight = 16,
   nextlayerid = 4,
-  nextobjectid = 22,
+  nextobjectid = 24,
   properties = {},
   tilesets = {
     {
@@ -100,6 +100,8 @@
         { id = 18, name = "", type = "candle", shape = "point", x = 392, y = 160, width = 0, height = 0, rotation = 0, visible = true, properties = { ["room"] = 2 } },
         { id = 19, name = "", type = "candle", shape = "point", x = 328, y = 96, width = 0, height = 0, rotation = 0, visible = true, properties = { ["room"] = 2 } },
         { id = 20, name = "", type = "door", shape = "rectangle", x = 208, y = 64, width = 16, height = 48, rotation = 0, visible = true, properties = {  } },
+        { id = 22, name = "", type = "enemy_spawn", shape = "point", x = 136, y = 40, width = 0, height = 0, rotation = 0, visible = true, properties = { ["room"] = 1, ["enemy"] = "vampire" } },
+        { id = 23, name = "", type = "enemy_spawn", shape = "point", x = 304, y = 100, width = 0, height = 0, rotation = 0, visible = true, properties = { ["room"] = 2, ["enemy"] = "vampire" } },
       }
     }
   }

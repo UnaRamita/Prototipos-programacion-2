@@ -63,6 +63,34 @@ Constants.ENEMY_HURT_TIME = 0.25
 Constants.ENEMY_FLICKER_TIME = 0.5 -- titileo corto despues de terminar la animacion de muerte, antes de desaparecer
 Constants.ENEMY_LOSE_INTEREST_RANGE = 340 -- si el jugador se aleja demasiado, vuelve a IDLE
 
+-- ===== Enemigo (Vampire) =====
+-- Mas fragil y rapido que el Blood Monster, pero su ataque (manejado por
+-- una corrutina real, ver src/vampire.lua y src/systems/coroutine_runner.lua)
+-- se telegrafia primero (preparacion) y despues embiste en linea recta
+-- (ataque) antes de quedar vulnerable un instante (recuperacion): premia
+-- al jugador que nota el aviso y lo interrumpe o lo esquiva.
+Constants.VAMPIRE_MAX_HP = 35
+Constants.VAMPIRE_SPEED = 95
+Constants.VAMPIRE_PATROL_SPEED = 45 -- mas lento que al perseguir: patrulla "idle" de pared a pared (ver src/vampire.lua)
+Constants.VAMPIRE_COLLIDER_W = 20
+Constants.VAMPIRE_COLLIDER_H = 18
+Constants.VAMPIRE_SCALE = 3.5 -- sprites de 32x32 (mas chicos que los 100x100 de soldier/blood monster)
+
+Constants.VAMPIRE_DETECT_RANGE = 220
+Constants.VAMPIRE_LOSE_INTEREST_RANGE = 320
+Constants.VAMPIRE_ATTACK_TRIGGER_RANGE = 90 -- distancia, persiguiendo, a la que arranca la secuencia de ataque
+Constants.VAMPIRE_ATTACK_HIT_RANGE = 46     -- alcance del hitbox durante la fase de embestida
+Constants.VAMPIRE_ATTACK_WIDTH = 40
+Constants.VAMPIRE_ATTACK_DAMAGE = 15
+Constants.VAMPIRE_ATTACK_COOLDOWN = 1.3 -- minimo entre secuencias de ataque completas
+Constants.VAMPIRE_HURT_TIME = 0.2
+
+-- Fases de la corrutina de ataque (ver VampireStates.attack en src/vampire.lua)
+Constants.VAMPIRE_WINDUP_TIME = 0.45  -- preparacion: aviso visual antes de atacar
+Constants.VAMPIRE_LUNGE_TIME = 0.35   -- duracion de la embestida
+Constants.VAMPIRE_LUNGE_SPEED = 260   -- velocidad durante la embestida (mas rapido que VAMPIRE_SPEED)
+Constants.VAMPIRE_RECOVER_TIME = 0.6  -- recuperacion: vulnerable, no ataca de nuevo de inmediato
+
 -- ===== HUD (corazones + estamina, ver src/ui.lua) =====
 -- Los sprites de Assets/Hud son chicos (corazones 16x16, estamina 32x32);
 -- se escalan para que se lean bien en la esquina superior izquierda sin

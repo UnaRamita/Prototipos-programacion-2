@@ -1,15 +1,8 @@
 # Dungeon Soldier — TP LÖVE2D
 
-Juego 2D top-down estilo Zelda clásico hecho en Lua + LÖVE2D, con dos
-niveles: el nivel 1 es un mapa de teselas fijo hecho en Tiled (dos salas
-conectadas por una puerta interactiva), y el nivel 2 se **genera
-proceduralmente** en cada partida (habitaciones y pasillos al azar, con
-enemigos y props distribuidos sobre el piso generado). Cámara que sigue al
-jugador y máquinas de estado reales tanto para el flujo del juego
-(gameplay/pausa/victoria/derrota) como para el jugador y los enemigos. El
-HUD (corazones de vida + segmentos de estamina) se actualiza mediante un
-sistema de eventos personalizado, no leyendo las variables del jugador
-cuadro a cuadro (ver "HUD y sistema de eventos" más abajo).
+Juego 2D top-down estilo Zelda clásico, hecho en Lua sobre el framework
+LÖVE2D. Un soldado explora una mazmorra de dos niveles, combate enemigos
+cuerpo a cuerpo, recoge objetos y progresa hasta completar el juego.
 
 ## Cómo ejecutar
 
@@ -20,17 +13,136 @@ cuadro a cuadro (ver "HUD y sistema de eventos" más abajo).
    love .
    ```
 
-   O arrastrar la carpeta `D:\OBJ2D` sobre `love.exe`.
-
 ## Controles
 
-| Acción                        | Tecla            |
-|-------------------------------|------------------|
-| Moverse                       | WASD o flechas   |
-| Atacar (gasta 1 de estamina)  | ESPACIO          |
-| Interactuar (puerta/llave/cofre/corazón) | F (cerca del objeto) |
-| Pausar / continuar            | ESC              |
-| Reiniciar                     | R (tras ganar/perder) |
+| Acción                                   | Tecla                 |
+|-------------------------------------------|-----------------------|
+| Moverse                                    | WASD o flechas         |
+| Atacar                                     | ESPACIO                |
+| Interactuar (puerta / llave / cofre / corazón) | F (cerca del objeto) |
+| Pausar / continuar                         | ESC                    |
+| Reiniciar                                  | R (tras ganar o perder)|
+
+La ventana es redimensionable: el juego se reescala y se centra solo,
+manteniendo siempre su proporción original.
+
+## Funcionalidades
+
+### Jugador
+
+El personaje (Soldier) se mueve en las 4 direcciones, ataca cuerpo a cuerpo
+con un hitbox direccional, y tiene una barra de vida y una de estamina. Al
+recibir daño queda brevemente invulnerable y es empujado en dirección
+opuesta al golpe. Su comportamiento está organizado en estados: inactivo,
+caminando, atacando y muerto.
+
+### Enemigos
+
+Hay dos tipos de enemigo, elegidos por cada spawn del mapa (propiedad
+`enemy` del objeto `enemy_spawn`; sin esa propiedad, Blood Monster por
+defecto — ver `src/dungeon.lua` y `Game.spawnEnemy` en `src/game.lua`).
+Ambos comparten la misma interfaz pública, así que el resto del juego
+(combate, orden de dibujado, condición de "todos muertos") no necesita
+distinguirlos.
+
+- **Blood Monster** (`src/enemy.lua`): detecta al jugador por distancia, lo
+  persigue en línea recta y ataca cuando está lo bastante cerca. Estados:
+  inactivo, persiguiendo, atacando, lastimado y muerto.
+- **Vampire** (`src/vampire.lua`): mismos estados, con dos diferencias.
+  Mientras está inactivo (sin haber detectado al jugador), patrulla en
+  línea recta — camina hacia un lado hasta chocar una pared, invierte
+  dirección y vuelve hasta la pared opuesta, así indefinidamente, hasta
+  que el jugador entra en su rango de detección. Y su ataque está
+  manejado por una **corrutina real de Lua** con tres fases —
+  preparación (se detiene y telegrafía el golpe), ataque (embestida en
+  línea recta hacia el jugador) y recuperación (queda vulnerable un
+  instante) — antes de volver a perseguir. Ver la sección "Corrutinas" más
+  abajo.
+
+Al morir, cualquiera de los dos reproduce su animación completa, titila
+brevemente y recién ahí desaparece (deja de dibujarse y de participar en
+colisiones/combate).
+
+### Combate
+
+Los ataques del jugador y los enemigos usan hitboxes rectangulares
+proyectados según la dirección en la que mira cada uno. Los golpes
+conectados reproducen un sonido de impacto; un ataque del jugador que no
+conecta reproduce un sonido distinto.
+
+### Niveles
+
+El juego tiene dos niveles consecutivos:
+
+- **Nivel 1**: mapa de teselas fijo, creado en el editor Tiled (dos salas
+  conectadas por una puerta interactiva que se abre al acercarse e
+  interactuar).
+- **Nivel 2**: mapa de teselas generado proceduralmente en cada partida —
+  habitaciones de tamaño y posición aleatoria conectadas por pasillos, con
+  enemigos y elementos decorativos distribuidos sobre el piso generado.
+  Las paredes eligen su textura (pared superior/inferior/lateral o esquina)
+  según sus celdas vecinas, no según su posición absoluta.
+
+En ambos niveles, derrotar a todos los enemigos hace aparecer una llave;
+recogerla y llevarla hasta el cofre lo abre. Abrir el cofre del nivel 1
+pasa al nivel 2; abrir el del nivel 2 termina el juego con victoria.
+
+### Cámara
+
+La cámara sigue al jugador y se mantiene dentro de los límites del nivel
+actual, sea cual sea su tamaño real.
+
+### Ventana y escalado
+
+La resolución de la ventana puede cambiar libremente (se puede agrandar,
+achicar o usar otra proporción). El juego se dibuja siempre a una
+resolución fija internamente y esa imagen se escala de forma uniforme y se
+centra dentro de la ventana real, sin deformarse y sin recortar el nivel.
+El espacio sobrante se rellena con el color de fondo del juego.
+
+### Pausa
+
+Presionar ESC durante la partida congela el juego (nada se mueve, ni
+jugador ni enemigos, ni corre ningún temporizador de gameplay) y muestra
+una pantalla de pausa superpuesta. Presionar ESC de nuevo continúa la
+partida exactamente donde quedó.
+
+### HUD
+
+La vida del jugador se muestra como tres corazones, cada uno con tres
+estados posibles (lleno, medio, vacío). La estamina se muestra como una
+barra de tres segmentos, cada uno lleno o vacío. Ambos indicadores se
+actualizan automáticamente cuando cambia la vida o la estamina real del
+jugador.
+
+### Estamina
+
+El jugador tiene 3 unidades de estamina. Atacar consume una unidad; la
+estamina se recupera sola con el tiempo si no se sigue atacando.
+
+### Sala completada y corazón de recuperación
+
+Al derrotar a todos los enemigos de un nivel aparece, junto al cofre, un
+corazón de recuperación. Al recogerlo, el jugador recupera una porción de
+vida (sin superar el máximo).
+
+### Sistema de eventos
+
+Los distintos sistemas del juego (interfaz, audio, generación de
+recompensas) se comunican entre sí mediante eventos, en vez de consultarse
+directamente unos a otros. Cuando cambia la vida o la estamina del
+jugador, cuando el jugador recibe daño o se cura, o cuando se completa una
+sala, el juego emite un evento correspondiente; cada sistema interesado
+reacciona por su cuenta (la interfaz se redibuja, se reproduce un sonido,
+aparece el corazón de recompensa).
+
+### Audio
+
+El juego reproduce sonidos para: golpe conectado (jugador o enemigo),
+ataque del jugador que falla, y daño recibido por el jugador. La
+recuperación de vida tiene su respuesta visual (un breve destello) y su
+mecanismo de sonido ya preparado, a la espera de un archivo de audio de
+curación todavía no incluido en el proyecto.
 
 ## Estructura del proyecto
 
@@ -38,243 +150,134 @@ cuadro a cuadro (ver "HUD y sistema de eventos" más abajo).
 main.lua          -- callbacks de LOVE, delega todo a src/game.lua
 conf.lua          -- configuracion de ventana
 
-lib/               -- librerias externas (vendored, no se tocan)
-  sti/            -- Simple Tiled Implementation: carga y dibuja el mapa de teselas
+lib/
+  sti/            -- Simple Tiled Implementation: carga y dibuja mapas de teselas
   hump/           -- camera.lua (camara) y timer.lua (eventos temporales)
 
-Assets/maps/
-  dungeon.tmx     -- mapa fuente, editable con el editor Tiled
-  dungeon.lua     -- el mismo mapa exportado a Lua (lo que carga STI en runtime)
+Assets/
+  maps/           -- dungeon.tmx (editable en Tiled) y dungeon.lua (exportado, usado en runtime)
+  dungeon/        -- tileset y sprites de props de la mazmorra
+  soldier/        -- spritesheets del jugador
+  blood monster/  -- spritesheets del enemigo Blood Monster
+  Vampire enemy/  -- spritesheets del enemigo Vampire (idle/ataque/muerte)
+  Hud/            -- sprites de corazones y estamina
+  sounds/         -- efectos de sonido
 
 src/
-  constants.lua   -- valores de balance (velocidad, daño, rangos, estamina, HUD, etc.)
-  assets.lua      -- carga centralizada de imagenes y sonidos
-  animation.lua   -- reproductor generico de spritesheets
-  combat.lua      -- colisiones AABB, hitbox de ataque, movimiento con colision
+  constants.lua           -- valores de balance y configuracion
+  assets.lua              -- carga centralizada de imagenes y sonidos
+  animation.lua           -- reproductor generico de spritesheets
+  combat.lua              -- colisiones, hitboxes, movimiento con colision
+  player.lua              -- jugador: movimiento, combate, vida, estamina
+  enemy.lua               -- enemigo Blood Monster: IA y combate
+  vampire.lua             -- enemigo Vampire: IA y ataque por corrutina
+  door.lua                -- puerta interactiva
+  key.lua                 -- llave recogible
+  chest.lua               -- cofre final de cada nivel
+  heart_pickup.lua        -- corazon de recuperacion
+  dungeon.lua             -- carga y dibuja el mapa de teselas del nivel actual
+  procedural_dungeon.lua  -- genera el nivel 2
+  ui.lua                  -- HUD, carteles de interaccion, pantallas de pausa/victoria/derrota
+  game.lua                -- orquestacion general: entidades, camara, colisiones, niveles
   systems/
-    state_machine.lua -- maquina de estados generica (game + entidades la comparten)
-    events.lua         -- bus de eventos personalizado (on/off/emit), instancia unica global
-    audio_system.lua   -- escucha PLAYER_DAMAGED/PLAYER_HEALED y reproduce el sonido correspondiente
-    viewport.lua        -- escalado/centrado del juego dentro de la ventana real
+    state_machine.lua     -- maquina de estados generica
+    coroutine_runner.lua  -- driver de corrutinas controladas por tiempo (ver Vampire)
+    events.lua            -- bus de eventos
+    audio_system.lua       -- respuestas de audio a eventos del jugador
+    viewport.lua           -- escalado/centrado de la ventana
   states/
-    gameplay_state.lua -- la partida en si: mueve entidades, resuelve combate, emite ROOM_COMPLETED
-    pause_state.lua     -- pausa (ESC): congela el gameplay sin ningun flag "paused"
-    victory_state.lua  -- pantalla de victoria
-    defeat_state.lua   -- pantalla de derrota
-  player.lua      -- Soldier: maquina de estados idle/walk/attack/dead; vida/estamina; emite eventos
-  enemy.lua       -- Blood Monster: maquina de estados idle/chase/attack/hurt/dead
-  door.lua        -- puerta interactiva (nivel 1) / stub sin puerta (nivel 2)
-  key.lua         -- llave recogible (aparece al matar a todos los enemigos)
-  heart_pickup.lua -- corazon de recuperacion (aparece al completar una sala, ver ROOM_COMPLETED)
-  chest.lua       -- cofre: abre con la llave, pasa de nivel o dispara la victoria
-  dungeon.lua     -- carga el mapa de teselas (STI, fijo o generado) y expone paredes/spawns/props
-  procedural_dungeon.lua -- genera el nivel 2: habitaciones+pasillos al azar, en el mismo formato que exporta Tiled
-  ui.lua          -- HUD (corazones/estamina via eventos), cartel de interaccion, mensajes, pausa, victoria/derrota
-  game.lua        -- orquesta todo: maquina de estados del juego, nivel actual, camara, colisiones, "RewardSystem"
-
-Assets/Hud/       -- sprites del HUD: corazones (full/half/empty.png) y estamina (L/M/R stamina.png + sus "empty")
+    gameplay_state.lua     -- partida en curso
+    pause_state.lua         -- pausa
+    victory_state.lua       -- pantalla de victoria
+    defeat_state.lua        -- pantalla de derrota
 ```
 
-## Mapeo con la consigna
+## Cumplimiento de la consigna
 
-- **Personaje interactivo** → `player.lua` (movimiento 4 direcciones, ataque,
-  vida, estado, animación).
-- **Entidades preprogramadas** → `enemy.lua` (Blood Monster con IA de
-  detección/persecución/ataque), `door.lua` (puerta interactiva), `key.lua`
-  y `chest.lua` (objetivo final).
-- **Interacción del jugador** → ataque con SPACE (`player.lua`) y F para
-  interactuar con puerta / llave / cofre (`Game.keypressed`), con carteles
-  contextuales ("Presiona F para abrir", "Presiona F para recoger").
-- **Comportamiento del enemigo** → `enemy.lua`, máquina de estados
-  IDLE → CHASE → ATTACK, con HURT y DEAD como interrupciones. Los enemigos
-  de la sala 2 nacen con `active = false` y no ejecutan `update()` (o sea,
-  ninguna lógica de IA) hasta que la puerta pasa a estado `"open"`
-  (`Game.update`).
-- **Secuencia de victoria** → matar a todos los enemigos → aparece la
-  llave (`Game.allEnemiesDead`) → recogerla con F (`key.lua`) → ir hasta
-  el cofre y presionar F (`chest.lua`); sin la llave el cofre muestra
-  "Necesitas una llave" y no se abre. Abrir el cofre del nivel 1 pasa al
-  nivel 2 (`GameplayState:tecla`, `game.machine:cambiar("gameplay", {level=2})`);
-  abrir el cofre del nivel 2 (el último) dispara la victoria real.
-- **Condición de derrota** → HP del jugador llega a 0, se reproduce la
-  animación de muerte y luego se muestra "DERROTA" (`Game.update`).
-- **Feedback visual** → parpadeo del jugador al recibir daño, flash blanco
-  del enemigo al ser golpeado, animaciones de ataque/muerte, oscurecimiento
-  de la sala 2 hasta abrir la puerta (con velas que se encienden).
-- **Feedback auditivo** → `assets/sounds/hit.mp3` (golpe conectado, tanto del
-  jugador como del enemigo) y `assets/sounds/misshit.mp3` (ataque del
-  jugador que no conecta).
+### Máquinas de estado
 
-## HUD y sistema de eventos
+El proyecto usa una máquina de estados genérica y reutilizable
+(`src/systems/state_machine.lua`), con cuatro métodos por estado
+(`ingresar`, `actualizar`, `dibujar`, `tecla`). Se aplica en tres niveles
+distintos:
 
-### Corazones (vida)
+- **Flujo del juego**: `gameplay` ↔ `pause` ↔ `victory`/`defeat`.
+- **Jugador**: `idle` → `walk` → `attack` → `idle`/`walk`, con `dead` como
+  interrupción desde cualquiera.
+- **Enemigo**: `idle` → `chase` → `attack`, con `hurt` y `dead` como
+  interrupciones desde cualquiera.
 
-Tres corazones (`Assets/Hud/full.png` / `half.png` / `empty.png`), cada uno
-representando `PLAYER_MAX_HP / 3` de vida real. La vida **sigue siendo**
-`Player.hp` (0-100, sin tocar daño ni balance): `UI.lua` traduce esa vida a
-una escala de 0 a 3 "corazones" (`hp/maxHp*3`) y, para cada uno de los 3
-corazones, calcula cuánto de *ese* corazón puntual está lleno
-(`clamp(heartsTotal - (i-1), 0, 1)`) para elegir el sprite — lleno, medio o
-vacío. No hay una segunda variable de vida: si mañana cambia `PLAYER_MAX_HP`,
-los corazones se siguen calculando bien solos.
+Los cambios de estado son reales y verificables en tiempo de ejecución
+(por ejemplo, morir interrumpe cualquier estado del jugador y lleva a
+`dead`; completar el nivel lleva de `gameplay` a `victory`; ESC alterna
+entre `gameplay` y `pause`).
 
-### Estamina
+### Mapa de teselas y generación procedural
 
-No existía ningún sistema de estamina en el proyecto. Se agregó uno simple,
-integrado con lo que ya había: 3 unidades (`Constants.PLAYER_MAX_STAMINA`),
-se gasta 1 por ataque (`Player:tryAttack`) y se regenera 1 unidad sola cada
-`STAMINA_REGEN_INTERVAL` segundos sin gastar. **Decisión de diseño:** no
-bloquea el ataque al llegar a 0 — agregar esa restricción cambiaría el
-combate ya balanceado, y la consigna de este TP pide integrar eventos/HUD,
-no rediseñar el combate (queda documentado también en el comentario de
-`Constants.PLAYER_MAX_STAMINA`). Cada uno de los 3 segmentos del HUD
-(`L/M/R stamina.png`, con sus versiones `empty`) solo tiene 2 estados
-posibles (lleno/vacío, no hay sprite de "medio" para estamina), así que no
-se inventó ningún estado intermedio.
+El nivel 1 es un mapa de teselas (Tiled + Simple Tiled Implementation),
+con colisiones derivadas de una propiedad del tileset en vez de estar
+hardcodeadas. El nivel 2 se genera proceduralmente en cada partida
+(cantidad, tamaño y posición de las salas, pasillos, enemigos y
+decoración), reutilizando el mismo formato y el mismo sistema de carga y
+dibujado que el nivel 1.
 
-### Qué es un evento personalizado acá
+### Cámara y ventana
 
-`src/systems/events.lua` es un bus de eventos (publicador/suscriptor)
-genérico, una única instancia global (`Events`), igual de "singleton" que
-`Game`/`Dungeon`/`Assets`, que ya eran así en el proyecto:
+La cámara sigue al jugador respetando los límites del nivel actual. La
+ventana es redimensionable; el juego se escala de forma uniforme (sin
+deformarse) y se centra dentro de la ventana real, sea cual sea su
+tamaño o proporción.
 
-```lua
-local handle = Events:on(Events.PLAYER_HEALTH_CHANGED, function(hp, maxHp) ... end)
-Events:emit(Events.PLAYER_HEALTH_CHANGED, hp, maxHp)
-Events:off(handle)
-```
+### Pausa
 
-- `Events:on(nombre, callback)` suscribe `callback` y devuelve un `handle`
-  opaco (necesario para poder des-suscribirse después, porque una misma
-  función podría suscribirse más de una vez).
-- `Events:emit(nombre, ...)` llama a todos los suscriptores de ese evento,
-  pasándoles `...` tal cual.
-- `Events:off(handle)` saca esa suscripción puntual.
+La pausa está implementada como un estado más de la máquina de estados del
+juego, no como una variable booleana aislada: mientras el estado de pausa
+está activo, la lógica de la partida simplemente no se ejecuta.
 
-Los nombres de evento están centralizados como constantes en el propio
-módulo (`Events.PLAYER_HEALTH_CHANGED`, etc.) para que ningún archivo tenga
-que escribir el string a mano y arriesgarse a un typo silencioso.
+### Corrutinas
 
-### Eventos implementados
+Lua no tiene un scheduler de corrutinas integrado al loop del motor (a
+diferencia de, por ejemplo, `StartCoroutine`/`IEnumerator` en Unity): una
+corrutina de Lua (`coroutine.create`) hay que resumirla (`coroutine.resume`)
+a mano. `src/systems/coroutine_runner.lua` es ese puente: un driver chico y
+reutilizable que resume la corrutina cuadro a cuadro desde `:update(dt)`,
+interpretando lo que la corrutina le pasa a `coroutine.yield(...)`:
 
-| Evento | Lo emite | Payload | Lo escucha |
-|---|---|---|---|
-| `PLAYER_HEALTH_CHANGED` | `Player:takeDamage` / `Player:heal` / `Player.new` | `hp, maxHp` | `ui.lua` (corazones) |
-| `PLAYER_STAMINA_CHANGED` | `Player:consumeStamina` / regen en `Player:update` / `Player.new` | `stamina, maxStamina` | `ui.lua` (segmentos) |
-| `PLAYER_DAMAGED` | `Player:takeDamage` (solo si el daño se aplicó de verdad) | `amount` | `systems/audio_system.lua` |
-| `PLAYER_HEALED` | `Player:heal` (solo si curó algo) | `amount` | `systems/audio_system.lua` |
-| `ROOM_COMPLETED` | `GameplayState:actualizar` (mismo punto donde ya aparecía la llave) | — | `game.lua` ("RewardSystem": genera el corazón de recuperación) |
-| `HEALTH_PICKUP_COLLECTED` | `HeartPickup:collect` | — | (disponible para quien lo necesite; hoy no tiene suscriptor propio) |
+- `coroutine.yield(segundos)` → pausa esa cantidad de tiempo (equivalente a
+  `yield return new WaitForSeconds(...)`).
+- `coroutine.yield()` (sin argumentos) → pausa un único cuadro y devuelve
+  el `dt` de ese cuadro (para loops que necesitan avanzar cuadro a cuadro,
+  como la embestida).
 
-### Comunicación entre objetos
-
-Nadie se conoce directamente: `Player` no sabe que existe un HUD, `ui.lua`
-no sabe que existe un `Player`, y `GameplayState` no sabe que existe un
-corazón de recuperación.
+El **Vampire** (`src/vampire.lua`) es quien la usa: su estado `attack`
+arranca, en `ingresar()`, una corrutina con la secuencia completa —
 
 ```text
-Player:takeDamage()
-        │
-        ├─ modifica Player.hp (unica fuente de verdad)
-        └─ Events:emit(PLAYER_HEALTH_CHANGED, hp, maxHp)
-                │                         └─ Events:emit(PLAYER_DAMAGED, amount)
-                ▼                                   ▼
-        ui.lua actualiza su copia            audio_system.lua reproduce
-        local (para dibujar corazones)       Assets.sounds.hit
+preparación (yield 0.45s, quieto, telegrafiando el golpe)
+        ↓
+ataque (apunta una vez hacia el jugador, embiste en línea recta
+        cuadro a cuadro durante 0.35s)
+        ↓
+recuperación (yield 0.6s, vulnerable, no puede volver a atacar de inmediato)
 ```
 
-```text
-GameplayState:actualizar()  (sala completada: allEnemiesDead() paso a true)
-        │
-        └─ Events:emit(ROOM_COMPLETED)
-                │
-                ▼
-        game.lua (suscrito desde que se carga el modulo)
-        crea HeartPickup en Dungeon.healSpawnPos
-```
+y la resume en `actualizar(dt)` llamando a `vampire.attackCoroutine:update(dt)`.
+Si el vampiro recibe daño o muere a mitad de secuencia, `machine:cambiar()`
+llama primero a `salir()` del estado `attack`, que corta la corrutina
+(`:stop()`) antes de que la máquina de estados pase a `hurt`/`dead`: la
+secuencia nunca sigue moviendo al enemigo ni aplicando daño después de una
+interrupción, y nunca hay dos corrutinas de ataque corriendo a la vez sobre
+el mismo enemigo (`:start()` siempre reemplaza cualquier corrutina
+anterior). Un error dentro de la secuencia tampoco puede tirar abajo el
+juego: `CoroutineRunner:resume` captura el resultado de `coroutine.resume`
+y corta la corrutina en vez de propagar el error.
 
-`ui.lua` y `systems/audio_system.lua` se suscriben **una sola vez**, al
-cargarse el módulo (con `require`, que en Lua solo ejecuta el archivo la
-primera vez) — viven toda la partida, así que no hace falta
-des-suscribirlos nunca ni correr riesgo de duplicar la suscripción.
-`Player`/`Enemy`, en cambio, se recrean en cada nivel (`Game.setupEntities`)
-pero nunca se *suscriben* a nada, solo emiten — así que tampoco dejan
-suscripciones colgadas cuando se descartan. Por eso no hace falta
-desuscribir nada en este proyecto en particular, aunque `Events:off` existe
-y funciona para el caso en que sí hiciera falta.
+### Interfaz de usuario y eventos personalizados
 
-### Corazón de recuperación (sala completada)
-
-Reutiliza la condición que ya existía para la llave
-(`Game.allEnemiesDead()`, en `GameplayState:actualizar`) — no hay una
-segunda detección de "sala completada". En ese mismo punto se emite
-`ROOM_COMPLETED`; quien escucha (`game.lua`) instancia un `HeartPickup` en
-`Dungeon.healSpawnPos`, un punto fijo definido junto al cofre tanto en el
-mapa fijo (`Assets/maps/dungeon.lua`/`.tmx`, verificado contra la grilla
-real de paredes para que no caiga encima de una) como en el generador
-procedural (`addObject("heal_spawn", cx, cy + 1, {})`, al lado opuesto de
-`key_spawn` para no superponerse). Se recoge con F, igual que la llave/el
-cofre/la puerta (mismo mecanismo de interacción por proximidad que ya usaba
-todo el proyecto). **Si el jugador ya está al máximo de vida**, igual se
-puede recoger (no queda bloqueado esperando a que el jugador esté
-lastimado) pero no se cura nada de más — `Player:heal` clampea sola al
-máximo y solo emite `PLAYER_HEALED` si realmente curó algo.
-
-### Respuestas visuales y sonoras
-
-| Evento | Visual | Sonido |
-|---|---|---|
-| Daño recibido | Parpadeo rojo del jugador (`Player.hurtFlashTimer`, ya existía) | `Assets.sounds.hit`, ahora disparado por `audio_system.lua` escuchando `PLAYER_DAMAGED` |
-| Vida recuperada | Parpadeo verdoso breve (`Player.healFlashTimer`, nuevo) | Preparado (`audio_system.lua` ya escucha `PLAYER_HEALED`) pero **sin sonido real**: el proyecto no tiene ningún archivo de audio de curación (solo `hit.mp3`/`misshit.mp3`, ambos de combate) — no se inventó ninguna ruta. Para activarlo alcanza con agregar el archivo y una línea en `assets.lua` (`Assets.sounds.heal = love.audio.newSource(...)`). |
-| Estamina cambia | Los 3 segmentos del HUD se redibujan solos (vía evento) | No hay sonido apropiado existente para esto; no se agregó ninguno |
-
-El sonido de "jugador recibe daño" **ya existía** pero se reproducía
-directo desde `Game.resolveCombat` en el mismo momento en que se llamaba a
-`player:takeDamage`, incluso si el jugador estaba invulnerable y
-`takeDamage` no aplicaba nada. Al migrarlo a escuchar `PLAYER_DAMAGED`
-(emitido solo cuando el daño se aplica de verdad), de paso se corrigió ese
-caso: ya no suena el golpe si el jugador estaba invulnerable.
-
-## Decisiones de diseño a mencionar en la defensa
-
-- **Generación procedural del nivel 2** (`src/procedural_dungeon.lua`):
-  algoritmo clásico de roguelike simple — coloca entre 4 y 6 habitaciones
-  rectangulares de tamaño al azar sin que se superpongan (reintentando
-  posiciones), las conecta en cadena con pasillos rectos en "L", y convierte
-  en pared sólida cualquier celda vacía pegada a una celda de piso (así
-  cualquier forma de sala/pasillo queda automáticamente rodeada sin tener
-  que razonar caso por caso). Entre 5 y 8 enemigos y algunas velas se
-  reparten sobre celdas de piso al azar. El resultado **no es un nivel
-  paralelo aparte**: `ProceduralDungeon.generate()` arma una tabla Lua con
-  el mismo formato que exporta Tiled (mismos `tilesets`/`layers` que
-  `Assets/maps/dungeon.lua`), y se la pasa directo a `sti(map)` — STI acepta
-  tanto una ruta a archivo como una tabla ya construida. Por eso todo lo
-  demás (paredes por la propiedad `collidable`, spawns por la capa de
-  objetos, dibujado, colisiones, cámara) es el mismo código que usa el
-  nivel 1, sin duplicar nada.
-- Los sprites de Soldier y Blood Monster son tiras de una sola dirección
-  (miran a la derecha). Para el movimiento en 4 direcciones se usa flip
-  horizontal automático y una variable `facing` independiente (arriba/abajo/
-  izquierda/derecha) que posiciona el hitbox de ataque correctamente incluso
-  en los movimientos verticales.
-- Cámara (`lib/hump/camera.lua`): el mapa (1392x576 px de mundo) es más
-  ancho que la ventana (1280x720), así que la cámara sigue al jugador y se
-  recorta a los límites del mapa (`Game.updateCamera`, en `src/game.lua`)
-  para que nunca se vea "fuera" de la dungeon.
-- La sala 2 se dibuja oscurecida (overlay negro semitransparente) hasta que
-  se abre la puerta; al abrirla, la oscuridad se desvanece y las velas de
-  piso pasan de apagadas a encendidas — es la puesta en práctica visual de
-  "la puerta separa las dos partes y al abrirla se ilumina".
-- **Por qué las hitboxes se sentían desalineadas (y cómo se corrigió):** los
-  spritesheets de Soldier y Blood Monster miden 100px de alto por frame,
-  pero el personaje dibujado ocupa apenas hasta la fila ~57-60 — el resto
-  es relleno transparente. `Animation` anclaba siempre en la fila 100
-  (`frameH`), asi que el punto usado para colisionar (`entity.y`) quedaba
-  ~40px por debajo de los pies reales del sprite. Eso hacía que el jugador
-  pareciera atravesar una pared antes de chocar (por arriba) o frenar antes
-  de tocarla (por abajo) — no era un problema de las paredes en sí (su rect
-  de colisión y de dibujado siempre fueron el mismo), sino del punto de
-  referencia del personaje. La corrección (`Assets.footRow`, calculado leyendo
-  los píxeles reales de cada spritesheet en `assets.lua`) mide en píxeles
-  dónde termina de verdad cada sprite y usa esa fila como origen de anclaje
-  en `Animation:draw`, sin tocar ninguna hitbox a mano.
+La vida se representa con corazones y la estamina con una barra de
+segmentos, ambos actualizados mediante un sistema de eventos personalizado
+(`src/systems/events.lua`) en vez de leer las variables del jugador en
+cada cuadro. Los eventos del jugador (cambio de vida, cambio de estamina,
+daño recibido, curación) y de progreso (sala completada) comunican entre
+sí a la interfaz, el sistema de audio y la generación del corazón de
+recompensa, sin que esos sistemas se conozcan directamente entre sí.

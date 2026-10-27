@@ -13,6 +13,7 @@ local Dungeon = require("src.dungeon")
 local Door = require("src.door")
 local Player = require("src.player")
 local Enemy = require("src.enemy")
+local Vampire = require("src.vampire")
 local Chest = require("src.chest")
 local HeartPickup = require("src.heart_pickup")
 local StateMachine = require("src.systems.state_machine")
@@ -70,13 +71,28 @@ function Game.setupEntities()
 
     Game.enemies = {}
     for _, s in ipairs(Dungeon.enemySpawnsRoom1) do
-        table.insert(Game.enemies, Enemy.new(Assets, s.x, s.y))
+        table.insert(Game.enemies, Game.spawnEnemy(s))
     end
     for _, s in ipairs(Dungeon.enemySpawnsRoom2) do
-        local enemy = Enemy.new(Assets, s.x, s.y)
+        local enemy = Game.spawnEnemy(s)
         enemy.active = false -- se activan cuando se abre la puerta (ver GameplayState:actualizar)
         table.insert(Game.enemies, enemy)
     end
+end
+
+-- Instancia el enemigo que corresponda segun s.kind (leido de la propiedad
+-- "enemy" del objeto "enemy_spawn" en el mapa, ver Dungeon.loadObjects).
+-- Enemy (Blood Monster) y Vampire comparten exactamente la misma interfaz
+-- publica, asi que el resto del juego (Game.resolveCombat, el orden de
+-- dibujado, Game.allEnemiesDead) no necesita saber cual es cual.
+local ENEMY_TYPES = {
+    blood_monster = Enemy,
+    vampire = Vampire,
+}
+
+function Game.spawnEnemy(spawn)
+    local EnemyType = ENEMY_TYPES[spawn.kind] or Enemy
+    return EnemyType.new(Assets, spawn.x, spawn.y)
 end
 
 -- "RewardSystem": lo unico que hace es escuchar ROOM_COMPLETED y generar

@@ -53,6 +53,13 @@ function Assets.load()
     Assets.images.monsterAttack, Assets.footRow.monsterAttack = loadCharacterImage("Assets/blood monster/Blood Monster_A_Attack01.png")
     Assets.images.monsterDeath, Assets.footRow.monsterDeath = loadCharacterImage("Assets/blood monster/Blood Monster_A_Death.png")
 
+    -- Vampire (segundo enemigo, ver src/vampire.lua). No trae un sheet de
+    -- caminar separado -- "enemies-skeleton2_idle.png" es el unico sheet de
+    -- movimiento del pack y se reutiliza para idle/chase, igual de valido.
+    Assets.images.vampireIdle, Assets.footRow.vampireIdle = loadCharacterImage("Assets/Vampire enemy/enemies-skeleton2_idle.png")
+    Assets.images.vampireAttack, Assets.footRow.vampireAttack = loadCharacterImage("Assets/Vampire enemy/enemies-vampire_attack.png")
+    Assets.images.vampireDeath, Assets.footRow.vampireDeath = loadCharacterImage("Assets/Vampire enemy/enemies-vampire_death.png")
+
     -- Dungeon: el piso y las paredes del nivel 1 vienen del mapa de teselas
     -- (Assets/maps/dungeon.lua + Assets/dungeon/Dungeon_Tileset.png, ver
     -- src/dungeon.lua). Los props dinamicos siguen dibujandose como sprites

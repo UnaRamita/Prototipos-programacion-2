@@ -25,6 +25,7 @@ local MIN_ROOMS, MAX_ROOMS = 4, 6
 local ROOM_MIN_W, ROOM_MAX_W = 3, 5
 local ROOM_MIN_H, ROOM_MAX_H = 3, 4
 local MIN_ENEMIES, MAX_ENEMIES = 5, 8
+local VAMPIRE_CHANCE = 0.35 -- probabilidad de que un spawn de enemigo sea Vampire en vez de Blood Monster
 
 local function newGrid(w, h, value)
     local grid = {}
@@ -256,7 +257,11 @@ function ProceduralDungeon.generate()
         if ex then
             -- room = 1: en el nivel procedural no hay puerta que gatille
             -- una segunda oleada, todos los enemigos arrancan activos.
-            addObject("enemy_spawn", ex, ey, { room = 1 })
+            -- enemy: ~35% de probabilidad de Vampire en vez de Blood
+            -- Monster, para que el nivel procedural tambien mezcle los dos
+            -- tipos (ver Game.spawnEnemy en src/game.lua).
+            local kind = (love.math.random() < VAMPIRE_CHANCE) and "vampire" or "blood_monster"
+            addObject("enemy_spawn", ex, ey, { room = 1, enemy = kind })
         end
     end
 

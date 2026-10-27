@@ -108,7 +108,11 @@ local function loadObjects(layer)
             Dungeon.playerSpawn = { x = wx, y = wy }
         elseif obj.type == "enemy_spawn" then
             local target = (props.room == 1) and Dungeon.enemySpawnsRoom1 or Dungeon.enemySpawnsRoom2
-            table.insert(target, { x = wx, y = wy })
+            -- props.enemy: que tipo de enemigo instanciar (ver Game.setupEntities).
+            -- Los objetos "enemy_spawn" ya existentes en el mapa no tienen esta
+            -- propiedad -- por eso el default es "blood_monster", para no
+            -- cambiarles el comportamiento a los spawns que ya estaban.
+            table.insert(target, { x = wx, y = wy, kind = props.enemy or "blood_monster" })
         elseif obj.type == "candle" then
             local target = (props.room == 1) and Dungeon.candlesRoom1 or Dungeon.candlesRoom2
             table.insert(target, { x = wx, y = wy })
