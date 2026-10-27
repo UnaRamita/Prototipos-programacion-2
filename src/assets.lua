@@ -99,11 +99,9 @@ function Assets.load()
     Assets.sounds.hit = love.audio.newSource("Assets/sounds/hit.mp3", "static")
     Assets.sounds.miss = love.audio.newSource("Assets/sounds/misshit.mp3", "static")
 
-    -- No hay un sonido de curacion en el proyecto (solo hit.mp3/misshit.mp3,
-    -- ambos de combate). Assets.sounds.heal queda sin asignar (nil) a
-    -- proposito: src/systems/audio_system.lua ya esta preparado para
-    -- reproducirlo apenas exista el recurso (ver README, seccion de
-    -- limitaciones) -- no se inventa una ruta a un archivo que no existe.
+    -- Sonido de curacion: lo reproduce src/systems/audio_system.lua al
+    -- escuchar PLAYER_HEALED (al juntar un corazon de recuperacion).
+    Assets.sounds.heal = love.audio.newSource("Assets/sounds/HealSound.mp3", "static")
 end
 
 -- Reproduce un sonido permitiendo solapamiento (clona la fuente) para que

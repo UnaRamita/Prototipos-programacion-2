@@ -6,7 +6,7 @@
             "type": "lua",
             "request": "launch",
             "luaVersion": "luajit",
-            "runtimeExecutable": "D:\\LOVE\\lovec.exe",
+            "runtimeExecutable": "C:\\Program Files\\LOVE\\lovec.exe",
             "runtimeArgs": ["${workspaceFolder}"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false

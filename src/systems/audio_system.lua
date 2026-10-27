@@ -12,8 +12,8 @@
 -- realmente se aplico), tambien se corrige ese caso: ya no suena el golpe
 -- si el jugador estaba invulnerable y no paso nada.
 --
--- No hay sonido de curacion en el proyecto (ver src/assets.lua): mientras
--- Assets.sounds.heal no exista, este listener simplemente no hace nada.
+-- El sonido de curacion (Assets.sounds.heal, HealSound.mp3) suena al
+-- juntar un corazon, solo si realmente se recupero vida (ver Player:heal).
 
 local Assets = require("src.assets")
 local Events = require("src.systems.events")
@@ -25,9 +25,7 @@ Events:on(Events.PLAYER_DAMAGED, function()
 end)
 
 Events:on(Events.PLAYER_HEALED, function()
-    if Assets.sounds.heal then
-        Assets.playSound(Assets.sounds.heal)
-    end
+    Assets.playSound(Assets.sounds.heal)
 end)
 
 return AudioSystem

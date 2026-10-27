@@ -1,3 +1,7 @@
 {
-    "pixelbyte.love2d.path": "D:\\LOVE\\love.exe"
+    "pixelbyte.love2d.path": "C:\Program Files\LOVE\love.exe",
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.diagnostics.globals": ["love"],
+    "Lua.workspace.library": ["${3rd}/love2d/library"],
+    "Lua.workspace.checkThirdParty": false
 }

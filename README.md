@@ -139,10 +139,8 @@ aparece el corazón de recompensa).
 ### Audio
 
 El juego reproduce sonidos para: golpe conectado (jugador o enemigo),
-ataque del jugador que falla, y daño recibido por el jugador. La
-recuperación de vida tiene su respuesta visual (un breve destello) y su
-mecanismo de sonido ya preparado, a la espera de un archivo de audio de
-curación todavía no incluido en el proyecto.
+ataque del jugador que falla, daño recibido por el jugador y recuperación
+de vida al juntar un corazón (acompañada de un breve destello visual).
 
 ## Estructura del proyecto
 
