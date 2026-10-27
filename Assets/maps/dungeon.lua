@@ -1,4 +1,4 @@
-﻿return {
+return {
   version = "1.9",
   luaversion = "5.1",
   tiledversion = "1.10.2",
