@@ -173,6 +173,7 @@ function Enemy.new(assets, x, y)
     self.deathAnim = Animation.new(imgs.monsterDeath, 100, 100, 4, 0.15, false, footRow.monsterDeath)
     self.currentAnim = self.idleAnim
 
+    self.attackDamage = Constants.ENEMY_ATTACK_DAMAGE -- lo lee Game.resolveCombat (cada tipo de enemigo trae el suyo)
     self.attackTimer = 0
     self.attackCooldown = 0
     self.attackHitActive = false

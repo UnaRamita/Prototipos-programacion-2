@@ -195,7 +195,7 @@ function Game.resolveCombat()
     for _, enemy in ipairs(Game.enemies) do
         if enemy:isAttackHitActive() then
             if Combat.aabbOverlap(enemy:getAttackHitbox(), Combat.colliderRect(player)) then
-                player:takeDamage(Constants.ENEMY_ATTACK_DAMAGE, enemy.x, enemy.y)
+                player:takeDamage(enemy.attackDamage or Constants.ENEMY_ATTACK_DAMAGE, enemy.x, enemy.y)
                 enemy:registerHitOnPlayer()
             end
         end

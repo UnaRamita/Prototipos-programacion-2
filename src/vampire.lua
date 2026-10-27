@@ -1,7 +1,7 @@
 -- Vampire: segundo tipo de enemigo, con la misma forma/interfaz publica que
 -- Enemy (src/enemy.lua) -- :isAlive(), :isAttackHitActive(), :getAttackHitbox(),
 -- :registerHitOnPlayer(), :takeDamage(), :update(dt, player, solids), :draw(),
--- campos .x/.y/.active/.colliderW/.colliderH -- para que Game.enemies pueda
+-- campos .x/.y/.active/.attackDamage/.colliderW/.colliderH -- para que Game.enemies pueda
 -- mezclar Blood Monsters y Vampires en una sola lista sin que game.lua,
 -- GameplayState ni Combat tengan que distinguirlos (duck typing: ya es como
 -- esos modulos tratan a cualquier "enemigo", ver src/states/gameplay_state.lua).
@@ -272,6 +272,7 @@ function Vampire.new(assets, x, y)
     self.deathAnim = Animation.new(imgs.vampireDeath, 32, 32, 14, 0.05, false, footRow.vampireDeath)
     self.currentAnim = self.moveAnim
 
+    self.attackDamage = Constants.VAMPIRE_ATTACK_DAMAGE -- lo lee Game.resolveCombat (mas daño que el Blood Monster)
     self.attackCooldown = 0
     self.attackPhase = nil         -- nil | "windup" | "strike" | "recover" (ver VampireStates.attack)
     self.hitLandedThisSwing = false
