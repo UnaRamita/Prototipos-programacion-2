@@ -40,6 +40,47 @@ Respecto del Prototipo 3, esta versión suma:
 La ventana es redimensionable: el juego se reescala y se centra solo,
 manteniendo siempre su proporción original.
 
+## Build web (itch.io)
+
+El juego se publica en el navegador (HTML5) con
+[love.js](https://github.com/Davidobot/love.js) 11.4.1 — el equivalente web
+para LÖVE2D de una build WebGL. Requiere Node.js/npm.
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools/build_web.ps1
+```
+
+Genera, dentro de `build/` (carpeta ignorada por git, se puede borrar y
+regenerar siempre):
+
+- `dungeon-soldier-prototipo-4.love`: paquete LÖVE (ZIP con `main.lua` en la raíz).
+- `web/`: la versión HTML5 (`index.html`, `game.js`, `game.data`, `love.js`, `love.wasm`).
+- `dungeon-soldier-prototipo-4-web.zip`: `web/` comprimido, con `index.html`
+  en la raíz del ZIP, listo para subir a itch.io.
+
+Para probarla en local hay que servir `build/web` por HTTP (no funciona
+abriendo `index.html` con `file://`), por ejemplo con
+`python -m http.server 8000` dentro de `build/web`, y abrir
+`http://localhost:8000`. Hay que hacer clic sobre el juego para darle foco
+antes de usar el teclado.
+
+Notas técnicas de la build web:
+
+- Se usa el **modo compatibilidad** de love.js (`-c`, sin threads): itch.io no
+  envía por defecto los headers COOP/COEP que exige la versión con
+  `SharedArrayBuffer`. Memoria inicial: 64 MB (`-m 67108864`).
+- En el navegador el juego corre sobre **Lua 5.1 estándar**, no LuaJIT. Por eso
+  los `.lua` deben estar en UTF‑8 **sin BOM**: el mapa exportado de Tiled
+  (`Assets/maps/dungeon.lua`) tenía BOM, lo que LuaJIT tolera pero Lua 5.1
+  rechaza (`unexpected symbol near ...`) y el juego no arrancaba en la web.
+  Ya está corregido; si el mapa se vuelve a exportar desde Tiled conviene
+  comprobar que el archivo no vuelva a empezar con un BOM.
+
+Para publicar en itch.io: crear un proyecto de tipo **HTML**, subir
+`dungeon-soldier-prototipo-4-web.zip`, marcar *"This file will be played in
+the browser"* y configurar el tamaño del visor en 1280×720 (resolución
+interna del juego).
+
 ## Funcionalidades
 
 ### Jugador
@@ -161,6 +202,9 @@ de vida al juntar un corazón (acompañada de un breve destello visual).
 ```
 main.lua          -- callbacks de LOVE, delega todo a src/game.lua
 conf.lua          -- configuracion de ventana
+
+tools/
+  build_web.ps1   -- genera el .love, la version web (love.js) y el ZIP para itch.io
 
 lib/
   sti/            -- Simple Tiled Implementation: carga y dibuja mapas de teselas
